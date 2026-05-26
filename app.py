@@ -5,7 +5,7 @@ import requests
 import math
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 API_KEY = "3b036ca5b48149f1bc1d283626fa3b5b"
 
