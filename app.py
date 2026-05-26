@@ -8,7 +8,7 @@ app = Flask(__name__)
 # Tumeruhusu app za simu na kompyuta zote kupokea data bila kuzuiliwa (CORS)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-API_KEY = "3b036ca5b48149f1bc1d283626fa3b5b"
+API_KEY = "d0f9b7d74b61b2830933dd0572c555a2"
 
 def poisson_pmf(k, lamb):
     if lamb <= 0:
