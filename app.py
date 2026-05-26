@@ -5,6 +5,7 @@ import requests
 import math
 
 app = Flask(__name__)
+# Tumeruhusu app za simu na kompyuta zote kupokea data bila kuzuiliwa (CORS)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 API_KEY = "3b036ca5b48149f1bc1d283626fa3b5b"
@@ -17,6 +18,9 @@ def poisson_pmf(k, lamb):
 @app.route('/api/predict', methods=['POST'])
 def predict():
     data = request.json
+    if not data:
+        return jsonify({"status": "error", "message": "No data provided"}), 400
+        
     league_id = data.get('league_id')
     season = data.get('season')
 
@@ -26,8 +30,11 @@ def predict():
         'x-rapidapi-host': 'v3.football.api-sports.io'
     }
     
-    response = requests.get(url, headers=headers)
-    fixtures_data = response.json().get('response', [])
+    try:
+        response = requests.get(url, headers=headers)
+        fixtures_data = response.json().get('response', [])
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
     results = []
     
@@ -39,7 +46,11 @@ def predict():
         away_team = teams.get('away', {}).get('name')
         
         h2h_url = f"https://v3.football.api-sports.io/fixtures/headtohead?h2h={teams.get('home', {}).get('id')}-{teams.get('away', {}).get('id')}&last=10"
-        h2h_response = requests.get(h2h_url, headers=headers).json().get('response', [])
+        
+        try:
+            h2h_response = requests.get(h2h_url, headers=headers).json().get('response', [])
+        except:
+            h2h_response = []
 
         home_goals, away_goals = 0, 0
         match_count = len(h2h_response)
@@ -87,7 +98,6 @@ def predict():
         else:
             advice = "Inaweza kuwa Droo (X) au GG"
 
-        # Tumesafisha '模Z' hapa chini imekuwa 'Z' ya kawaida kabisa
         raw_date = fixture.get('date', '')
         try:
             formatted_date = datetime.fromisoformat(raw_date.replace('Z', '')).strftime('%d/%m/%Y %H:%M')
