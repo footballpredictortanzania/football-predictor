@@ -15,7 +15,7 @@ def poisson_pmf(k, lamb):
         return 0
     return (pow(lamb, k) * math.exp(-lamb)) / math.factorial(k)
 
-@app.route('/api/predict',模 (methods=['POST'])
+@app.route('/api/predict', methods=['POST'])
 def predict():
     data = request.json
     league_id = data.get('league_id')
@@ -95,7 +95,7 @@ def predict():
             advice = "Inaweza kuwa Droo (X) au GG"
 
         results.append({
-            "date": datetime.fromisoformat(fixture.get('date').replace('模Z', '')).strftime('%d/%m/%Y %H:%M'),
+            "date": datetime.fromisoformat(fixture.get('date').replace('Z', '')).strftime('%d/%m/%Y %H:%M'),
             "home": home_team,
             "away": away_team,
             "home_win": round(home_win_prob * 100, 1),
