@@ -2,14 +2,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import datetime
 import requests
-import math  # <-- Tumeshaweka math hapa, haina shida kwenye Render
+import math
 
 app = Flask(__name__)
 CORS(app)
 
-API_KEY = "3b036ca5b48149f1bc1d283626fa3b5b" # Hakikisha hii ni Key yako sahihi
+API_KEY = "3b036ca5b48149f1bc1d283626fa3b5b"
 
-# 1. FOMULA YA POISSON KUTUMIA MATH (Mbadala wa Scipy)
 def poisson_pmf(k, lamb):
     if lamb <= 0:
         return 0
@@ -21,7 +20,6 @@ def predict():
     league_id = data.get('league_id')
     season = data.get('season')
 
-    # Kuvuta data kutoka API-Football
     url = f"https://v3.football.api-sports.io/fixtures?league={league_id}&season={season}&next=15"
     headers = {
         'x-rapidapi-key': API_KEY,
@@ -39,9 +37,7 @@ def predict():
         
         home_team = teams.get('home', {}).get('name')
         away_team = teams.get('away', {}).get('name')
-        fixture_id = fixture.get('id')
-
-        # Kuvuta Takwimu za Timu (H2H)
+        
         h2h_url = f"https://v3.football.api-sports.io/fixtures/headtohead?h2h={teams.get('home', {}).get('id')}-{teams.get('away', {}).get('id')}&last=10"
         h2h_response = requests.get(h2h_url, headers=headers).json().get('response', [])
 
@@ -60,7 +56,6 @@ def predict():
             home_exp_goals = 1.3
             away_exp_goals = 1.1
 
-        # 2. KUPIGA HESABU ZA POISSON KUTUMIA FOMULA YETU MPYA
         home_win_prob = 0
         away_win_prob = 0
         draw_prob = 0
@@ -69,7 +64,6 @@ def predict():
 
         for x in range(6):
             for y in range(6):
-                # Tunaita ile fomula yetu tuliyotengeneza juu kutumia math
                 home_prob = poisson_pmf(x, home_exp_goals)
                 away_prob = poisson_pmf(y, away_exp_goals)
                 joint_prob = home_prob * away_prob
@@ -86,7 +80,6 @@ def predict():
                 else:
                     over_pct += joint_prob
 
-        # Kuandaa ushauri (Advice)
         if home_win_prob > 0.45:
             advice = f"Ushindi kwa {home_team} (1)"
         elif away_win_prob > 0.45:
@@ -94,8 +87,15 @@ def predict():
         else:
             advice = "Inaweza kuwa Droo (X) au GG"
 
+        # Tumesafisha '模Z' hapa chini imekuwa 'Z' ya kawaida kabisa
+        raw_date = fixture.get('date', '')
+        try:
+            formatted_date = datetime.fromisoformat(raw_date.replace('Z', '')).strftime('%d/%m/%Y %H:%M')
+        except:
+            formatted_date = raw_date
+
         results.append({
-            "date": datetime.fromisoformat(fixture.get('date').replace('Z', '')).strftime('%d/%m/%Y %H:%M'),
+            "date": formatted_date,
             "home": home_team,
             "away": away_team,
             "home_win": round(home_win_prob * 100, 1),
@@ -110,7 +110,6 @@ def predict():
         
     return jsonify({"status": "success", "matches": results})
 
-# 3. MFUMO WA PORT UNAOKUBALI RENDER NA NYUMBANI
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 5000))
