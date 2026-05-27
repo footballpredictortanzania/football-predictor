@@ -6,7 +6,7 @@ import math
 
 app = Flask(__name__)
 # Tumeruhusu app za simu na kompyuta zote kupokea data bila kuzuiliwa (CORS)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "https://footballpredictortanzania.github.io"}})
 
 API_KEY = "d0f9b7d74b61b2830933dd0572c555a2"
 
